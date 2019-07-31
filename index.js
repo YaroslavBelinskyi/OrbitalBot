@@ -1,15 +1,15 @@
-process.env["NTBA_FIX_319"] = 1
-require('dotenv').config()
+process.env.NTBA_FIX_319 = 1;
+require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = process.env.TOKEN;
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: true });
 
-// phrases = [{'виноват'}, {'горит'}, {'горю'}, {'должен'}, {'должны'}, {'вов'}, {'ла2'}, {'линейка'}, {'тест'}]
+// phrases = {'вов'}, {'ла2'}, {'линейка'}
 
-phrases = [
+const phrases = [
     {
-        keys: ['виноват', 'виноваты',],
+        keys: ['виноват', 'виноваты', 'виноватый', 'виновный', 'виновен'],
         answers: [
             'Димася, сука, виноват!',
             'Ууу сука, опять Димася!',
@@ -20,9 +20,9 @@ phrases = [
             'Ну да-да, не Димася, но блять он всеравно крайний!',
             'А давайте Димасю сделаем виноватым?',
         ],
-    }, 
+    },
     {
-        keys: ['горит', 'горю', 'гориш', 'горим',],
+        keys: ['горит', 'горю', 'гориш', 'горим'],
         answers: [
             'Че пичот?',
             'Ого пичёт!',
@@ -33,7 +33,7 @@ phrases = [
         ],
     },
     {
-        keys: ['тест', 'тестируем', 'тестим', 'тесты',],
+        keys: ['тест', 'тестируем', 'тестим', 'тесты'],
         answers: [
             'Хуест!',
             'Очко себе протестируй, пёс!',
@@ -42,10 +42,36 @@ phrases = [
             'Сестру твою тестирую, ага...',
         ],
     },
-]
+    {
+        keys: ['должен', 'обязан', 'должны', 'обязаны'],
+        answers: [
+            'Пффф кто-то кому-то что-то должен?',
+            'Кому должен - всем прощаю!',
+            'Никому ничем он или я или не обязян!',
+            'Пппффф ага да, щас, бегу...',
+            'Попроще будь, он или я или ты кому-то че-то обещал?!',
+        ],
+    },
+    {
+        keys: ['контент', 'кантент', 'кантента', 'контента'],
+        answers: [
+            'Хочешь контент - плати.',
+            'Не хочешь контент - один хуй плати.',
+            'Бабки давай и будет тебе кантент.',
+            'Щас сборы поставим на кантентик!',
+            'Будут деньги - будет контент.',
+        ],
+    },
+    {
+        keys: ['ты пидор'],
+        answers: [
+            'Сам такой!',
+            'Нееее, Димася пидор!',
+        ],
+    },
+];
 
-const mealTime = ['11:17', '11:19']
-const orbitalChatId = -229085973;
+const mealTime = ['11:17', '11:19'];
 
 function randomAnswer(ar) {
     const number = Math.floor((Math.random() * ar.length));
@@ -56,33 +82,21 @@ function randomAnswer(ar) {
 bot.on('message', (msg) => {
     for (let i = 0; i < phrases.length; i++) {
         for (let j = 0; j < phrases[i].keys.length; j++) {
-            if (msg.text.indexOf(phrases[i].keys[j]) >= 0) {
+            const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
+            console.log(msg);
+            if (regex.test(msg.text)) {
                 bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
-                break
+                break;
             }
         }
     }
 });
 
-// bot.on('message', function (msg) {
-//     const chatId = msg.chat.id;
-//     if (msg.text.indexOf('виноват') >= 0) {
-//         bot.sendMessage(chatId, 'Димася, сука, виноват!');
-//     }
-//     if (msg.text.indexOf('горит') >= 0 || msg.text.indexOf('горю') >= 0) {
-//         bot.sendMessage(chatId, 'Че пичот?');
-//     }
-//     if (msg.text.indexOf('должен') >= 0 || msg.text.indexOf('должны') >= 0) {
-//         bot.sendMessage(chatId, 'Попроще будь, он или я или ты кому-то чето обещал?!');
-//     }
-// });
-
-
-setInterval(function(){
-    for (let i = 0; i < mealTime.length; i++){
-        const curDate = new Date().getHours() + ':' + new Date().getMinutes();
-            if (mealTime[i] == curDate) {
-                bot.sendMessage(orbitalChatId, 'Еду закажите!!!');
-            }
+setInterval(() => {
+    for (let i = 0; i < mealTime.length; i++) {
+        const curDate = `${new Date().getHours()}:${new Date().getMinutes()}`;
+        if (mealTime[i] === curDate) {
+            bot.sendMessage(process.env.orbitalChatId, 'Еду закажите!!!');
         }
+    }
 }, 60000);
