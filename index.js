@@ -81,10 +81,10 @@ function randomAnswer(ar) {
 }
 
 bot.on('message', (msg) => {
+    console.log(msg);
     for (let i = 0; i < phrases.length; i++) {
         for (let j = 0; j < phrases[i].keys.length; j++) {
             const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
-            console.log(msg);
             if (regex.test(msg.text)) {
                 bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
                 break;
