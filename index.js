@@ -71,7 +71,8 @@ const phrases = [
     },
 ];
 
-const mealTime = ['11:17', '11:19'];
+const mealTime = ['11:45', '11:50'];
+const mealOrder = ['16:30', '17:00'];
 
 function randomAnswer(ar) {
     const number = Math.floor((Math.random() * ar.length));
@@ -95,8 +96,11 @@ bot.on('message', (msg) => {
 setInterval(() => {
     for (let i = 0; i < mealTime.length; i++) {
         const curDate = `${new Date().getHours()}:${new Date().getMinutes()}`;
-        if (mealTime[i] === curDate) {
+        if (mealOrder[i] === curDate) {
             bot.sendMessage(process.env.orbitalChatId, 'Еду закажите!!!');
         }
+        if (mealTime[i] === curDate) {
+            bot.sendMessage(process.env.orbitalChatId, '@Melor1n, набери за хавчик!');
+        }
     }
-}, 60000);
+}, 50000);
