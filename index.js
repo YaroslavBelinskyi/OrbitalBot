@@ -2,6 +2,7 @@ process.env.NTBA_FIX_319 = 1;
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
+const getCarInfo = require('./lib/axios-requests/forum');
 
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
