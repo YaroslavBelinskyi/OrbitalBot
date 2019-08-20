@@ -2,7 +2,7 @@ process.env.NTBA_FIX_319 = 1;
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
-const getCarInfo = require('./lib/axios-requests/forum');
+const getArticles = require('./lib/axios-requests/forum');
 
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -28,6 +28,24 @@ bot.on('message', (msg) => {
                 break;
             }
         }
+    }
+});
+
+bot.onText(/\/news (.+)/, async (msg, match) => {
+    const articles = await getArticles();
+    const values = Object.values(articles);
+    let answer = 'Вот:\r\n';
+    if (match[1].toLowerCase() === 'all') {
+        for (let i = 0; i < 10; i++) {
+            answer += `[${values[i].innerHTML}]`;
+            answer += `(https://www.overclockers.ua${values[i].href})\r\n`;
+        }
+        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
+    } else {
+        const articleNumber = parseInt(match[1], 10);
+        answer += `[${values[articleNumber - 1].innerHTML}]`;
+        answer += `(https://www.overclockers.ua${values[articleNumber - 1].href})\r\n`;
+        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN' });
     }
 });
 
