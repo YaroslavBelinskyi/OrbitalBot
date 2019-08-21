@@ -2,12 +2,12 @@ process.env.NTBA_FIX_319 = 1;
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
-const { getArticlesOvers, getArticlesFootball, getRandomBashJoke, } = require('./lib/axios-requests/forums');
+const { getArticlesOvers, getArticlesFootball, getRandomBashJoke } = require('./lib/axios-requests/forums');
 
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-// phrases = {'вов'}, {'ла2'}, {'линейка'}
+// phrases = {'вов'}, {'ла2'}
 
 const mealTime = ['11:45', '11:50'];
 const mealOrder = ['16:30', '16:55'];
@@ -23,9 +23,16 @@ bot.on('message', (msg) => {
     for (let i = 0; i < phrases.length; i++) {
         for (let j = 0; j < phrases[i].keys.length; j++) {
             const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
-            if (regex.test(msg.text)) {
-                bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
-                break;
+            const lowText = msg.text.toLowerCase();
+            if (regex.test(lowText)) {
+                if (phrases[i].answers) {
+                    bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
+                    break;
+                } else {
+                    const percentage = Math.floor(Math.random() * Math.floor(100) + 1);
+                    bot.sendMessage(msg.chat.id, `Я бы сказал ${percentage}%.`);
+                    break;
+                }
             }
         }
     }
@@ -78,12 +85,10 @@ bot.onText(/\/news fb (.+)/, async (msg, match) => {
     }
 });
 
-bot.onText(/бот пошути/, async (msg) => {
+bot.onText(/бот пошути/i, async (msg) => {
     const joke = await getRandomBashJoke();
     console.log(joke);
-    // const values = Object.values(joke);
-    // console.log(values);
-    const answer = joke.innerHTML.trim().replace(/<br>/gi, '\r\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+    const answer = joke.textContent.trim().replace(/<br>/gi, '\r\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
     bot.sendMessage(msg.chat.id, answer);
 });
 
