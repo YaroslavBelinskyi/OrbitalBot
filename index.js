@@ -2,12 +2,12 @@ process.env.NTBA_FIX_319 = 1;
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
-const { getArticlesOvers, getArticlesFootball, getRandomBashJoke } = require('./lib/axios-requests/forums');
+const {
+    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomBashJoke,
+} = require('./lib/axios-requests/forums');
 
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
-
-// phrases = {'вов'}, {'ла2'}
 
 const mealTime = ['11:45', '11:50'];
 const mealOrder = ['16:30', '16:55'];
@@ -38,56 +38,87 @@ bot.on('message', (msg) => {
     }
 });
 
-bot.onText(/\/news over (.+)/, async (msg, match) => {
-    const articles = await getArticlesOvers();
-    const values = Object.values(articles);
-    let answer = 'Вот:\r\n';
-    if (match[1].toLowerCase() === 'all') {
-        for (let i = 0; i < 10; i++) {
-            answer += `${i + 1}. [${values[i].textContent}]`;
-            answer += `(https://www.overclockers.ua${values[i].href})\r\n`;
-        }
-        // const replyOptions = {
-        //     reply_markup: {
-        //         resize_keyboard: true,
-        //         one_time_keyboard: true,
-        //         keyboard: [
-        //             ['yes'],
-        //             ['no'],
-        //         ],
-        //     },
-        // };
-        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
-        // bot.sendMessage(msg.chat.id, 'Какую выберешь?', replyOptions);
-    } else {
-        const articleNumber = parseInt(match[1], 10);
-        answer += `[${values[articleNumber - 1].textContent}]`;
-        answer += `(https://www.overclockers.ua${values[articleNumber - 1].href})\r\n`;
-        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN' });
+bot.onText(/\/news (.+)/, async (msg, match) => {
+    let siteData;
+    let site;
+    if (match[1].toLowerCase() === 'over') {
+        siteData = await getArticlesOvers();
+        site = 'over';
+    } else if (match[1].toLowerCase() === 'fb') {
+        siteData = await getArticlesFootball();
+        site = 'fb';
+    } else if (match[1].toLowerCase() === 'play') {
+        siteData = await getArticlesPlayua();
+        site = 'play';
     }
+    const values = Object.values(siteData.articles);
+    let answer = 'Вот:\r\n';
+    let len = 10;
+    if (values.length < 10) {
+        len = values.length;
+    }
+    for (let i = 0; i < len; i++) {
+        answer += `${i + 1}. [${values[i].textContent.trim()}]`;
+        answer += `(${siteData.link}${values[i].href})\r\n`;
+    }
+    const callBackData = [];
+    (function dataGenerator() {
+        for (let i = 0; i < 12; i++) {
+            callBackData.push(JSON.stringify({ env: site, pos: i }));
+        }
+    }());
+    const replyOptions = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '1', callback_data: callBackData[0] }, { text: '2', callback_data: callBackData[1] }, { text: '3', callback_data: callBackData[2] }],
+                [{ text: '4', callback_data: callBackData[3] }, { text: '5', callback_data: callBackData[4] }, { text: '6', callback_data: callBackData[5] }],
+                [{ text: '7', callback_data: callBackData[6] }, { text: '8', callback_data: callBackData[7] }, { text: '9', callback_data: callBackData[8] }],
+                [{ text: '10', callback_data: callBackData[9] }, { text: 'Random', callback_data: callBackData[10] }, { text: 'Cancel', callback_data: callBackData[11] }],
+            ],
+        },
+    };
+    await bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
+    await bot.sendMessage(msg.chat.id, `@${msg.from.username}, какую выберешь?`, replyOptions);
 });
 
-bot.onText(/\/news fb (.+)/, async (msg, match) => {
-    const articles = await getArticlesFootball();
-    const values = Object.values(articles);
-    let answer = 'Вот:\r\n';
-    if (match[1].toLowerCase() === 'all') {
-        for (let i = 0; i < 10; i++) {
-            answer += `${i + 1}. [${values[i].innerHTML.trim()}]`;
-            answer += `(${values[i].href})\r\n`;
-        }
-        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
+bot.on('callback_query', async (msg) => {
+    const data = JSON.parse(msg.data);
+    const position = data.pos;
+    const environment = data.env;
+    let siteData;
+    if (environment === 'over') {
+        siteData = await getArticlesOvers();
+    } else if (environment === 'fb') {
+        siteData = await getArticlesFootball();
+    } else if (environment === 'play') {
+        siteData = await getArticlesPlayua();
+    }
+    const values = Object.values(siteData.articles);
+    let answer = '';
+    if (position === 11) {
+        answer = 'Ну и пошел ты нахуй!';
+        const opts = {
+            chat_id: msg.message.chat.id,
+            message_id: msg.message.message_id,
+        };
+        bot.editMessageText(answer, opts);
     } else {
-        const articleNumber = parseInt(match[1], 10);
-        answer += `[${values[articleNumber - 1].innerHTML.trim()}]`;
-        answer += `(${values[articleNumber - 1].href})\r\n`;
-        bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN' });
+        let articleNumber = parseInt(position, 10);
+        if (position === 10) {
+            articleNumber = Math.floor(Math.random() * values.length);
+        }
+        if (!values[articleNumber]) {
+            bot.sendMessage(msg.message.chat.id, 'Такого номера в списке нет, ты что слепой, псина?', { parse_mode: 'MARKDOWN' });
+        } else {
+            answer += `[${values[articleNumber].textContent}]`;
+            answer += `(${siteData.link}${values[articleNumber].href})\r\n`;
+            bot.sendMessage(msg.message.chat.id, answer, { parse_mode: 'MARKDOWN' });
+        }
     }
 });
 
 bot.onText(/бот пошути/i, async (msg) => {
     const joke = await getRandomBashJoke();
-    console.log(joke);
     const answer = joke.textContent.trim().replace(/<br>/gi, '\r\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
     bot.sendMessage(msg.chat.id, answer);
 });
