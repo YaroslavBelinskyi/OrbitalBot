@@ -3,7 +3,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
 const {
-    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomBashJoke,
+    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomJoke,
 } = require('./lib/axios-requests/forums');
 
 const token = process.env.TOKEN;
@@ -118,7 +118,7 @@ bot.on('callback_query', async (msg) => {
 });
 
 bot.onText(/бот пошути/i, async (msg) => {
-    const joke = await getRandomBashJoke();
+    const joke = await getRandomJoke();
     const answer = joke.textContent.trim().replace(/<br>/gi, '\r\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
     bot.sendMessage(msg.chat.id, answer);
 });
