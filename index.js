@@ -9,8 +9,8 @@ const {
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-const mealTime = ['11:45', '11:50'];
-const mealOrder = ['16:30', '16:55'];
+const mealTime = ['08:45', '08:50'];
+const mealOrder = ['13:30', '13:55'];
 
 function randomAnswer(ar) {
     const number = Math.floor((Math.random() * ar.length));
@@ -18,23 +18,27 @@ function randomAnswer(ar) {
     return text;
 }
 
-bot.on('message', (msg) => {
-    console.log(msg);
-    for (let i = 0; i < phrases.length; i++) {
-        for (let j = 0; j < phrases[i].keys.length; j++) {
-            const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
-            const lowText = msg.text.toLowerCase();
-            if (regex.test(lowText)) {
-                if (phrases[i].answers) {
-                    bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
-                    break;
-                } else {
-                    const percentage = Math.floor(Math.random() * Math.floor(100) + 1);
-                    bot.sendMessage(msg.chat.id, `Я бы сказал ${percentage}%.`);
-                    break;
+bot.on('message', async (msg) => {
+    try {
+        console.log(msg);
+        for (let i = 0; i < phrases.length; i++) {
+            for (let j = 0; j < phrases[i].keys.length; j++) {
+                const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
+                const lowText = msg.text.toLowerCase();
+                if (regex.test(lowText)) {
+                    if (phrases[i].answers) {
+                        bot.sendMessage(msg.chat.id, randomAnswer(phrases[i].answers));
+                        break;
+                    } else {
+                        const percentage = Math.floor(Math.random() * Math.floor(100) + 1);
+                        bot.sendMessage(msg.chat.id, `Я бы сказал ${percentage}%.`);
+                        break;
+                    }
                 }
             }
         }
+    } catch (error) {
+        console.log(error);
     }
 });
 
