@@ -3,7 +3,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const phrases = require('./phrases');
 const {
-    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomJoke,
+    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomJoke, getRandomPictureWowlol,
 } = require('./lib/axios-requests/forums');
 
 const token = process.env.TOKEN;
@@ -133,8 +133,10 @@ bot.onText(/бот пошути/i, async (msg) => {
 
 bot.onText(/вовлол/i, async (msg) => {
     try {
-        const picture = await getRandomJoke();
-        bot.sendMessage(msg.chat.id, picture);
+        const pictureObj = await getRandomPictureWowlol();
+        const text = pictureObj.alt;
+        const picture = pictureObj.src;
+        bot.sendMessage(msg.chat.id, `${text}\r\n${picture}`);
     } catch (error) {
         console.log(error);
     }
