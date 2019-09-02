@@ -124,7 +124,7 @@ bot.on('callback_query', async (msg) => {
 bot.onText(/бот пошути/i, async (msg) => {
     try {
         const joke = await getRandomJoke();
-        const answer = joke.textContent.trim().replace(/<br>/gi, '\r\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+        const answer = joke.innerHTML.trim().replace(/<br>/gi, '\r\n');
         bot.sendMessage(msg.chat.id, answer);
     } catch (error) {
         console.log(error);
