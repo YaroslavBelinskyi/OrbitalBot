@@ -135,15 +135,11 @@ bot.onText(/вовлол/i, async (msg) => {
     try {
         const jokeObj = await getRandomJokeWowlol();
         const text = jokeObj.innerHTML.replace(/<br>/gi, '\r').replace(/(?=<).*/gi, '').trim();
-        let picture = '';
-        let comment = '';
+        let picture = 'Там хуевый пост был, я ебал его парсить.';
         if (jokeObj.querySelector('img')) {
             picture = jokeObj.querySelector('img').src;
-            if (jokeObj.querySelector('img').alt) {
-                comment = picture.alt;
-            }
         }
-        bot.sendMessage(msg.chat.id, `${text}\r\n${picture}\r\n${comment}`);
+        bot.sendMessage(msg.chat.id, `${text}\r\n${picture}`);
     } catch (error) {
         console.log(error);
     }
