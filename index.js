@@ -43,81 +43,89 @@ bot.on('message', async (msg) => {
 });
 
 bot.onText(/\/news (.+)/, async (msg, match) => {
-    let siteData;
-    let site;
-    if (match[1].toLowerCase() === 'over') {
-        siteData = await getArticlesOvers();
-        site = 'over';
-    } else if (match[1].toLowerCase() === 'fb') {
-        siteData = await getArticlesFootball();
-        site = 'fb';
-    } else if (match[1].toLowerCase() === 'play') {
-        siteData = await getArticlesPlayua();
-        site = 'play';
-    }
-    const values = Object.values(siteData.articles);
-    let answer = 'Вот:\r\n';
-    let len = 10;
-    if (values.length < 10) {
-        len = values.length;
-    }
-    for (let i = 0; i < len; i++) {
-        answer += `${i + 1}. [${values[i].textContent.trim()}]`;
-        answer += `(${siteData.link}${values[i].href})\r\n`;
-    }
-    const callBackData = [];
-    (function dataGenerator() {
-        for (let i = 0; i < 12; i++) {
-            callBackData.push(JSON.stringify({ env: site, pos: i }));
+    try {
+        let siteData;
+        let site;
+        if (match[1].toLowerCase() === 'over') {
+            siteData = await getArticlesOvers();
+            site = 'over';
+        } else if (match[1].toLowerCase() === 'fb') {
+            siteData = await getArticlesFootball();
+            site = 'fb';
+        } else if (match[1].toLowerCase() === 'play') {
+            siteData = await getArticlesPlayua();
+            site = 'play';
         }
-    }());
-    const replyOptions = {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: '1', callback_data: callBackData[0] }, { text: '2', callback_data: callBackData[1] }, { text: '3', callback_data: callBackData[2] }],
-                [{ text: '4', callback_data: callBackData[3] }, { text: '5', callback_data: callBackData[4] }, { text: '6', callback_data: callBackData[5] }],
-                [{ text: '7', callback_data: callBackData[6] }, { text: '8', callback_data: callBackData[7] }, { text: '9', callback_data: callBackData[8] }],
-                [{ text: '10', callback_data: callBackData[9] }, { text: 'Random', callback_data: callBackData[10] }, { text: 'Cancel', callback_data: callBackData[11] }],
-            ],
-        },
-    };
-    await bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
-    await bot.sendMessage(msg.chat.id, `@${msg.from.username}, какую выберешь?`, replyOptions);
+        const values = Object.values(siteData.articles);
+        let answer = 'Вот:\r\n';
+        let len = 10;
+        if (values.length < 10) {
+            len = values.length;
+        }
+        for (let i = 0; i < len; i++) {
+            answer += `${i + 1}. [${values[i].textContent.trim()}]`;
+            answer += `(${siteData.link}${values[i].href})\r\n`;
+        }
+        const callBackData = [];
+        (function dataGenerator() {
+            for (let i = 0; i < 12; i++) {
+                callBackData.push(JSON.stringify({ env: site, pos: i }));
+            }
+        }());
+        const replyOptions = {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '1', callback_data: callBackData[0] }, { text: '2', callback_data: callBackData[1] }, { text: '3', callback_data: callBackData[2] }],
+                    [{ text: '4', callback_data: callBackData[3] }, { text: '5', callback_data: callBackData[4] }, { text: '6', callback_data: callBackData[5] }],
+                    [{ text: '7', callback_data: callBackData[6] }, { text: '8', callback_data: callBackData[7] }, { text: '9', callback_data: callBackData[8] }],
+                    [{ text: '10', callback_data: callBackData[9] }, { text: 'Random', callback_data: callBackData[10] }, { text: 'Cancel', callback_data: callBackData[11] }],
+                ],
+            },
+        };
+        await bot.sendMessage(msg.chat.id, answer, { parse_mode: 'MARKDOWN', disable_web_page_preview: true });
+        await bot.sendMessage(msg.chat.id, `@${msg.from.username}, какую выберешь?`, replyOptions);
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 bot.on('callback_query', async (msg) => {
-    const data = JSON.parse(msg.data);
-    const position = data.pos;
-    const environment = data.env;
-    let siteData;
-    if (environment === 'over') {
-        siteData = await getArticlesOvers();
-    } else if (environment === 'fb') {
-        siteData = await getArticlesFootball();
-    } else if (environment === 'play') {
-        siteData = await getArticlesPlayua();
-    }
-    const values = Object.values(siteData.articles);
-    let answer = '';
-    if (position === 11) {
-        answer = 'Ну и пошел ты нахуй!';
-        const opts = {
-            chat_id: msg.message.chat.id,
-            message_id: msg.message.message_id,
-        };
-        bot.editMessageText(answer, opts);
-    } else {
-        let articleNumber = parseInt(position, 10);
-        if (position === 10) {
-            articleNumber = Math.floor(Math.random() * values.length);
+    try {
+        const data = JSON.parse(msg.data);
+        const position = data.pos;
+        const environment = data.env;
+        let siteData;
+        if (environment === 'over') {
+            siteData = await getArticlesOvers();
+        } else if (environment === 'fb') {
+            siteData = await getArticlesFootball();
+        } else if (environment === 'play') {
+            siteData = await getArticlesPlayua();
         }
-        if (!values[articleNumber]) {
-            bot.sendMessage(msg.message.chat.id, 'Такого номера в списке нет, ты что слепой, псина?', { parse_mode: 'MARKDOWN' });
+        const values = Object.values(siteData.articles);
+        let answer = '';
+        if (position === 11) {
+            answer = 'Ну и пошел ты нахуй!';
+            const opts = {
+                chat_id: msg.message.chat.id,
+                message_id: msg.message.message_id,
+            };
+            bot.editMessageText(answer, opts);
         } else {
-            answer += `[${values[articleNumber].textContent}]`;
-            answer += `(${siteData.link}${values[articleNumber].href})\r\n`;
-            bot.sendMessage(msg.message.chat.id, answer, { parse_mode: 'MARKDOWN' });
+            let articleNumber = parseInt(position, 10);
+            if (position === 10) {
+                articleNumber = Math.floor(Math.random() * values.length);
+            }
+            if (!values[articleNumber]) {
+                bot.sendMessage(msg.message.chat.id, 'Такого номера в списке нет, ты что слепой, псина?', { parse_mode: 'MARKDOWN' });
+            } else {
+                answer += `[${values[articleNumber].textContent}]`;
+                answer += `(${siteData.link}${values[articleNumber].href})\r\n`;
+                bot.sendMessage(msg.message.chat.id, answer, { parse_mode: 'MARKDOWN' });
+            }
         }
+    } catch (error) {
+        console.log(error);
     }
 });
 
