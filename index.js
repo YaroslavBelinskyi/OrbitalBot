@@ -139,7 +139,7 @@ bot.onText(/вовлол/i, async (msg) => {
         let comment = '';
         if (jokeObj.querySelector('img')) {
             picture = jokeObj.querySelector('img').src;
-            if (picture.alt) {
+            if (jokeObj.querySelector('img').alt) {
                 comment = picture.alt;
             }
         }
