@@ -131,6 +131,15 @@ bot.onText(/бот пошути/i, async (msg) => {
     }
 });
 
+bot.onText(/вовлол/i, async (msg) => {
+    try {
+        const picture = await getRandomJoke();
+        bot.sendMessage(msg.chat.id, picture);
+    } catch (error) {
+        console.log(error);
+    }
+});
+
 setInterval(() => {
     for (let i = 0; i < mealTime.length; i++) {
         const curDate = `${new Date().getHours()}:${new Date().getMinutes()}`;
