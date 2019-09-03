@@ -142,8 +142,11 @@ bot.onText(/бот пошути/i, async (msg) => {
 bot.onText(/вовлол/i, async (msg) => {
     try {
         const jokeObj = await getRandomJokeWowlol();
-        const text = jokeObj.innerHTML.replace(/<br>/gi, '\r').replace(/(?=<).*/gi, '').trim();
-        let picture = 'Там хуевый пост был, я ебал его парсить.';
+        let text = jokeObj.innerHTML.replace(/<br>/gi, '\r').replace(/(?=<).*/gi, '').trim();
+        let picture = '';
+        if (text === null) {
+            text = 'Там хуевый пост был, я ебал его парсить.';
+        }
         if (jokeObj.querySelector('img')) {
             picture = jokeObj.querySelector('img').src;
         }
