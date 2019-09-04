@@ -147,7 +147,7 @@ bot.onText(/вовлол/i, async (msg) => {
             picture = jokeObj.querySelector('img').src;
         }
         // bot.sendMessage(msg.chat.id, `${text}\r\n${picture}`);
-        bot.sendPhoto(msg.chat.id, picture);
+        bot.sendPhoto(msg.chat.id, picture, { caption: text });
     } catch (error) {
         console.log(error);
     }
