@@ -9,17 +9,13 @@ const {
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-const mealTime = ['08:45', '08:50'];
-const mealOrder = ['13:30', '13:55'];
-
-function randomAnswer(ar) {
-    const number = Math.floor((Math.random() * ar.length));
-    const text = ar[number];
-    return text;
-}
-
 bot.on('message', async (msg) => {
     try {
+        function randomAnswer(ar) {
+            const number = Math.floor((Math.random() * ar.length));
+            const text = ar[number];
+            return text;
+        }
         console.log(msg);
         for (let i = 0; i < phrases.length; i++) {
             for (let j = 0; j < phrases[i].keys.length; j++) {
@@ -150,20 +146,9 @@ bot.onText(/вовлол/i, async (msg) => {
         if (jokeObj.querySelector('img')) {
             picture = jokeObj.querySelector('img').src;
         }
-        bot.sendMessage(msg.chat.id, `${text}\r\n${picture}`);
+        // bot.sendMessage(msg.chat.id, `${text}\r\n${picture}`);
+        bot.sendPhoto(msg.chat.id, picture);
     } catch (error) {
         console.log(error);
     }
 });
-
-setInterval(() => {
-    for (let i = 0; i < mealTime.length; i++) {
-        const curDate = `${new Date().getHours()}:${new Date().getMinutes()}`;
-        if (mealOrder[i] === curDate) {
-            bot.sendMessage(process.env.orbitalChatId, 'Еду закажите!!!');
-        }
-        if (mealTime[i] === curDate) {
-            bot.sendMessage(process.env.orbitalChatId, '@Melor1n, набери за хавчик!');
-        }
-    }
-}, 60000);
