@@ -13,5 +13,6 @@ module.exports = {
         "no-inner-declarations": 0,
         "no-param-reassign": 0,
         "no-plusplus": 0,
+        "max-len": 0,
     },
 };

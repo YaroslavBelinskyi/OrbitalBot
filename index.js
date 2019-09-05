@@ -1,10 +1,14 @@
 process.env.NTBA_FIX_319 = 1;
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const phrases = require('./phrases');
+const phrases = require('./bot-content/phrases');
+const responds = require('./bot-content/responds');
 const {
-    getArticlesOvers, getArticlesFootball, getArticlesPlayua, getRandomJoke, getRandomJokeWowlol,
+    getArticlesOvers, getArticlesFootball, getArticlesPlayua,
 } = require('./lib/axios-requests/forums');
+const {
+    getRandomJoke, getRandomJokeWowlol,
+} = require('./lib/axios-requests/jokes');
 
 const token = process.env.TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -17,6 +21,9 @@ bot.on('message', async (msg) => {
             return text;
         }
         console.log(msg);
+        if (msg.reply_to_message && msg.reply_to_message.from.first_name === 'Your Master') {
+            bot.sendMessage(msg.chat.id, randomAnswer(responds), { reply_to_message_id: msg.message_id });
+        }
         for (let i = 0; i < phrases.length; i++) {
             for (let j = 0; j < phrases[i].keys.length; j++) {
                 const regex = new RegExp(`(^|\\s|,)${phrases[i].keys[j]}(\\s|$|,|\\.|\\?|\\!)`, 'ig');
